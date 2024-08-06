@@ -18,7 +18,7 @@ def dict_factory(cursor, row):
 def home():
     return "<h1>Distant Reading Archive</h1><p>This is a prototype API</p>"
 
-# A route to return all of available entries i our catalog.
+# A route to return all of available entries in our catalog.
 @app.route('/api/v2/resources/books/all', methods=['GET'])
 def api_all():
     db_path = os.path.join('db', 'books.db')    
@@ -38,16 +38,16 @@ def page_not_found(e):
 def api_filter():
     query_parameters = request.args
 
-    id = query_parameters.get('id')
+    book_id = query_parameters.get('id')
     published = query_parameters.get('published')
     author = query_parameters.get('author')
 
     query = 'SELECT * FROM books WHERE'
     to_filter = []
 
-    if id:
+    if book_id:
         query += ' id=? AND'
-        to_filter.append(id)
+        to_filter.append(book_id)
     
     if published:
         query += ' published=? AND'
@@ -57,7 +57,7 @@ def api_filter():
         query += ' author=? AND'
         to_filter.append(author)
 
-    if not(id or published or author):
+    if not(book_id or published or author):
         return page_not_found(404)
 
     query = query[:-4] + ';'
@@ -76,7 +76,7 @@ def add_book():
     
     # Receives the data in JSON format in a HTTP POST request
     if not request.is_json:
-        return "<p>The content isn't of type JSON<\p>"
+        return "<p>The content isn't of type JSON</p>"
 
     content = request.get_json()
     title = content.get('title')
