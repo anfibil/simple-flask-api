@@ -1,27 +1,27 @@
-# Simple Flask API
+# シンプルなFlask API
 
-This project presents a simple REST API with Python and Flask to retrieve book data from a Sqlite3 database.
+このプロジェクトは、PythonとFlaskを使用してSqlite3データベースから書籍データを取得するシンプルなREST APIを提供します。
 
-### How to use
+### 使用方法
 
-1. Clone this project
-2. run ```pip install pipenv```
-3. run ```pipenv install```
-4. run ```python api.py```
+1. このプロジェクトをクローンします
+2. ```pip install pipenv```を実行します
+3. ```pipenv install```を実行します
+4. ```python api.py```を実行します
 
-### API request examples:
-To access the data, just open the browser and access the API as the examples below.
+### APIリクエストの例:
+データにアクセスするには、ブラウザを開いて以下の例のようにAPIにアクセスします。
 
-Get all books:
+すべての書籍を取得:
 
 ``` http://127.0.0.1:5000/api/v2/resources/books/all```
 
-Get books were the author is *Connie Willis*
+著者が*Connie Willis*の書籍を取得:
 
 ```http://127.0.0.1:5000/api/v2/resources/books?author=Connie+Willis```
 
-Get books published in 2010
+2010年に出版された書籍を取得:
 
 ``` http://127.0.0.1:5000/api/v2/resources/books?published=2010```
 
-A running version of this API can be found [here](https://simpleflaskapi-cpatrickalves.herokuapp.com/).
+このAPIの実行中のバージョンは[こちら](https://simpleflaskapi-cpatrickalves.herokuapp.com/)で見つけることができます。
