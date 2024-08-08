@@ -1,103 +1,70 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 import sqlite3
 import os
 
-
 # Init app
-app = Flask(__name__)
+app = FastAPI()
 
-def dict_factory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
+class Book(BaseModel):
+    title: str
+    author: str
+    published: str
+    first_sentence: str
 
-# Flask maps HTTP requests to Python functions.
-# The process of mapping URLs to functions is called routing.
-@app.route('/', methods=['GET'])
+# A route to return the home page
+@app.get("/")
 def home():
     return "<h1>Distant Reading Archive</h1><p>This is a prototype API</p>"
 
-# A route to return all of available entries i our catalog.
-@app.route('/api/v2/resources/books/all', methods=['GET'])
+# A route to return all available entries in our catalog.
+@app.get("/api/v2/resources/books/all")
 def api_all():
     db_path = os.path.join('db', 'books.db')    
     conn = sqlite3.connect(db_path)
-    # returns items from the database as dictionaries rather than lists
-    conn.row_factory = dict_factory
+    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     all_books = cur.execute('SELECT * FROM books;').fetchall()
+    return JSONResponse(content=[dict(row) for row in all_books])
 
-    return jsonify(all_books)
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return "<h1>404</h1><p>The resource could not be found</p>", 404
-
-@app.route('/api/v2/resources/books', methods=['GET'])
-def api_filter():
-    query_parameters = request.args
-
-    id = query_parameters.get('id')
-    published = query_parameters.get('published')
-    author = query_parameters.get('author')
-
+@app.get("/api/v2/resources/books")
+def api_filter(id: int = Query(None), published: str = Query(None), author: str = Query(None)):
     query = 'SELECT * FROM books WHERE'
     to_filter = []
 
     if id:
         query += ' id=? AND'
         to_filter.append(id)
-    
     if published:
         query += ' published=? AND'
         to_filter.append(published)
-
     if author:
         query += ' author=? AND'
         to_filter.append(author)
 
-    if not(id or published or author):
-        return page_not_found(404)
+    if not (id or published or author):
+        raise HTTPException(status_code=404, detail="The resource could not be found")
 
     query = query[:-4] + ';'
 
     db_path = os.path.join('db', 'books.db')    
     conn = sqlite3.connect(db_path)
-    conn.row_factory = dict_factory
+    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
     results = cur.execute(query, to_filter).fetchall()
+    return JSONResponse(content=[dict(row) for row in results])
 
-    return jsonify(results)
-
-@app.route('/api/v2/resources/books', methods=['POST'])
-def add_book():
-    
-    # Receives the data in JSON format in a HTTP POST request
-    if not request.is_json:
-        return "<p>The content isn't of type JSON<\p>"
-
-    content = request.get_json()
-    title = content.get('title')
-    author = content.get('author')
-    published = content.get('published')
-    first_sentence = content.get('first_sentence')
-
-    # Save the data in db
+@app.post("/api/v2/resources/books")
+def add_book(book: Book):
     db_path = os.path.join('db', 'books.db')    
     conn = sqlite3.connect(db_path)
-    query = f'INSERT INTO books (title, author, published, first_sentence) \
-              VALUES ("{title}", "{author}", "{published}", "{first_sentence}");'
-
+    query = 'INSERT INTO books (title, author, published, first_sentence) VALUES (?, ?, ?, ?);'
     cur = conn.cursor()
-    cur.execute(query)
+    cur.execute(query, (book.title, book.author, book.published, book.first_sentence))
     conn.commit()
-    
-    return jsonify(request.get_json())
-
+    return book
 
 # A method that runs the application server.
-if __name__ == "__main__":
-    # Threaded option to enable multiple instances for multiple user access support
-    app.run(debug=False, threaded=True, port=5000)
+# Note: Uvicorn should be used to run this FastAPI app instead of this block.
