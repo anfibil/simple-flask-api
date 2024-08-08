@@ -1,27 +1,27 @@
 # Simple Flask API
 
-This project presents a simple REST API with Python and Flask to retrieve book data from a Sqlite3 database.
+This project provides a simple REST API that retrieves book data from a Sqlite3 database using Python and Flask.
 
-### How to use
+### How to Use
 
 1. Clone this project
-2. run ```pip install pipenv```
-3. run ```pipenv install```
-4. run ```python api.py```
+2. Run `pip install pipenv`
+3. Run `pipenv install`
+4. Run `python api.py`
 
-### API request examples:
-To access the data, just open the browser and access the API as the examples below.
+### Example API Requests:
+To access the data, open a browser and access the API as shown in the examples below.
 
 Get all books:
 
 ``` http://127.0.0.1:5000/api/v2/resources/books/all```
 
-Get books were the author is *Connie Willis*
+Get books by author *Connie Willis*
 
 ```http://127.0.0.1:5000/api/v2/resources/books?author=Connie+Willis```
 
-Get books published in 2010
+Get books published in 2010:
 
 ``` http://127.0.0.1:5000/api/v2/resources/books?published=2010```
 
-A running version of this API can be found [here](https://simpleflaskapi-cpatrickalves.herokuapp.com/).
+The current version of this API can be found [here](https://simpleflaskapi-cpatrickalves.herokuapp.com/)
