@@ -7,7 +7,7 @@ This project presents a simple REST API with Python and Flask to retrieve book d
 1. Clone this project
 2. run ```pip install pipenv```
 3. run ```pipenv install```
-4. run ```python api.py```
+4. run ```python app.py```
 
 ### API request examples:
 To access the data, just open the browser and access the API as the examples below.
