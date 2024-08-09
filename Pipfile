@@ -6,8 +6,8 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-fastapi = "*"
-uvicorn = "*"
+flask = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"
