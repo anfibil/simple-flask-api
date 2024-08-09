@@ -10,7 +10,7 @@ This project presents a simple REST API with Python and Flask to retrieve book d
 4. run ```python app.py```
 
 ### API request examples:
-To access the data, just open the browser and access the API as the examples below.
+To access the data, open the browser and access the API as the examples below.
 
 Get all books:
 
