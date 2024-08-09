@@ -1,10 +1,15 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 import os
 
 
 # Init app
-app = Flask(__name__)
+app = FastAPI()
+
+# Allow CORS for all origins
+app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
 
 def dict_factory(cursor, row):
     d = {}
@@ -12,36 +17,22 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 
-# Flask maps HTTP requests to Python functions.
-# The process of mapping URLs to functions is called routing.
-@app.route('/', methods=['GET'])
-def home():
+@app.get('/')
+async def home():
     return "<h1>Distant Reading Archive</h1><p>This is a prototype API</p>"
 
-# A route to return all of available entries i our catalog.
-@app.route('/api/v2/resources/books/all', methods=['GET'])
-def api_all():
+@app.get('/api/v2/resources/books/all')
+async def api_all():
     db_path = os.path.join('db', 'books.db')    
     conn = sqlite3.connect(db_path)
-    # returns items from the database as dictionaries rather than lists
     conn.row_factory = dict_factory
     cur = conn.cursor()
     all_books = cur.execute('SELECT * FROM books;').fetchall()
 
-    return jsonify(all_books)
+    return JSONResponse(content=all_books)
 
-@app.errorhandler(404)
-def page_not_found(e):
-    return "<h1>404</h1><p>The resource could not be found</p>", 404
-
-@app.route('/api/v2/resources/books', methods=['GET'])
-def api_filter():
-    query_parameters = request.args
-
-    id = query_parameters.get('id')
-    published = query_parameters.get('published')
-    author = query_parameters.get('author')
-
+@app.get('/api/v2/resources/books')
+async def api_filter(id: int = None, published: str = None, author: str = None):
     query = 'SELECT * FROM books WHERE'
     to_filter = []
 
@@ -58,7 +49,7 @@ def api_filter():
         to_filter.append(author)
 
     if not(id or published or author):
-        return page_not_found(404)
+        raise HTTPException(status_code=404, detail="The resource could not be found")
 
     query = query[:-4] + ';'
 
@@ -69,16 +60,11 @@ def api_filter():
 
     results = cur.execute(query, to_filter).fetchall()
 
-    return jsonify(results)
+    return JSONResponse(content=results)
 
-@app.route('/api/v2/resources/books', methods=['POST'])
-def add_book():
-    
-    # Receives the data in JSON format in a HTTP POST request
-    if not request.is_json:
-        return "<p>The content isn't of type JSON<\p>"
-
-    content = request.get_json()
+@app.post('/api/v2/resources/books')
+async def add_book(request: Request):
+    content = await request.json()
     title = content.get('title')
     author = content.get('author')
     published = content.get('published')
@@ -93,11 +79,7 @@ def add_book():
     cur = conn.cursor()
     cur.execute(query)
     conn.commit()
-    
-    return jsonify(request.get_json())
-
+    return JSONResponse(content=content)
 
 # A method that runs the application server.
-if __name__ == "__main__":
-    # Threaded option to enable multiple instances for multiple user access support
-    app.run(debug=False, threaded=True, port=5000)
+# Note: FastAPI is typically run with a command like `uvicorn app:app --reload`
